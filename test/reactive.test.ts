@@ -34,6 +34,17 @@ it('new props of object can be tracked', () => {
     expect(dummy).toBe(123)
 })
 
+it('symbol key can be tracked', () => {
+    let sym = Symbol()
+    let dummy 
+    let state: any = reactive({})
+
+    effect(() => { dummy = state[sym] })
+    state[sym] = 123
+
+    expect(dummy).toBe(123)
+})
+
 it('array index can be tracked', () => {
     let dummy
     let state = reactive([1])

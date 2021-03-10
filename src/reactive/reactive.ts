@@ -1,13 +1,13 @@
 import { isObject } from '../shared'
 import { trigger, track } from './effect'
 
-function set(target: object, key: string, value: any, receiver: any) {
+function set(target: object, key: PropertyKey, value: any, receiver: any) {
     const result = Reflect.set(target, key, value, receiver)
     trigger(target, key)
     return result
 }
 
-function get(target: object, key: string, receiver: any) {
+function get(target: object, key: PropertyKey, receiver: any) {
     const result = Reflect.get(target, key, receiver)
     track(target, key)
     return result

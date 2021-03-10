@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+<script src="./dist/mini-vue.umd.js"></script>
+<script>
+const { h, render } = Vue
+
+let i = 0
+const app = document.getElementById('app')
+const child = h('button', { 
+    style: { 
+        color: 'red' 
+    },
+    onclick () {
+        console.log(i++)
+    }
+}, 'Click!')
+const vnode = h('div', { id: 'foo', style: { color: 'blue' } }, [
+    'before...', 
+    h('br'), 
+    child, 
+    h('br'), 
+    'after...',
+])
+
+render(vnode, app)
+</script>
+</html>

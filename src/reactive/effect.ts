@@ -1,5 +1,5 @@
 type PropsSet = Set<Function>
-type ObjectMap = Map<string, PropsSet>
+type ObjectMap = Map<PropertyKey, PropsSet>
 
 const targetMap: WeakMap<object, ObjectMap> = new WeakMap()
 const effectStack: Function[] = []
@@ -10,7 +10,7 @@ export function effect(fn: Function) {
     effectStack.pop()
 }
 
-export function trigger(target: object, prop: string) {
+export function trigger(target: object, prop: PropertyKey) {
     if (!targetMap.has(target)) {
         return 
     }
@@ -21,7 +21,7 @@ export function trigger(target: object, prop: string) {
     deps && deps.forEach(fn => fn())
 }
 
-export function track(target: object, prop: string) {
+export function track(target: object, prop: PropertyKey) {
     if (!effectStack.length) {
         return 
     }
