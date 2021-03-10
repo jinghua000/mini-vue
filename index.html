@@ -15,22 +15,31 @@ const { h, render } = Vue
 
 let i = 0
 const app = document.getElementById('app')
-const child = h('button', { 
-    style: { 
-        color: 'red' 
-    },
-    onclick () {
-        console.log(i++)
-    }
-}, 'Click!')
-const vnode = h('div', { id: 'foo', style: { color: 'blue' } }, [
-    'before...', 
-    h('br'), 
-    child, 
-    h('br'), 
-    'after...',
-])
+
+// const child = h('button', { 
+//     style: { 
+//         color: 'red' 
+//     },
+//     onclick () {
+//         console.log(i++)
+//     }
+// }, 'Click!')
+
+// const vnode = h('div', { id: 'foo', style: { color: 'blue' } }, [
+//     'before...', 
+//     h('br'), 
+//     child, 
+//     h('br'), 
+//     'after...',
+// ])
+
+let vnode = h('div', { style: { color: 'red' } }, ['text...'])
 
 render(vnode, app)
+
+vnode = h('div', { style: { color: 'blue' } })
+
+render(vnode, app)
+
 </script>
 </html>

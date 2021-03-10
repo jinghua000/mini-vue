@@ -33,8 +33,17 @@ function mount(vnode: VNode, container: HostNode) {
     }
 }
 
-function patch(oldVNode: VNode, vnode: VNode, container: HostNode) {
+function patch(n1: VNode, n2: VNode, container: HostNode) {
+    const { type: oldType } = n1
+    const { type } = n2
 
+    if (type !== oldType) {
+        replaceVNode(n1, n2, container)
+    } else if (type & VNodeTypes.ELEMENT) {
+        patchElement(n1, n2, container)
+    } else if (type & VNodeTypes.TEXT) {
+        patchText(n1, n2, container)
+    }
 }
 
 function mountElement(vnode: VNode, container: HostNode) {
@@ -66,9 +75,89 @@ function mountText(vnode: VNode, container: HostNode) {
 
 function mountChildren(children: any[], container: HostNode) {
     for (let i = 0; i < children.length; i++) {
-        const child = normalizeVnode(children[i])
+        const child = children[i] = normalizeVnode(children[i])
         mount(child, container)
     }
+}
+
+function patchElement(n1: VNode, n2: VNode, container: HostNode) {
+    if (n2.tag !== n1.tag) {
+        replaceVNode(n1, n2, container)
+        return 
+    }
+
+    n2.el = n1.el
+    patchProps(n1, n2)
+    patchChildren(n1, n2)
+}
+
+function patchChildren(n1: VNode, n2: VNode) {
+    const prevType = n1.type
+    const prevChildren = n1.children
+    const { type, el } = n2
+
+    if (type & VNodeTypes.TEXT_CHILDREN) {
+
+    } else if (type & VNodeTypes.ARRAY_CHILDREN) {
+
+    } else {
+        for (let i = 0; i < prevChildren.length; i++) {
+            el.removeChild(prevChildren[i])
+        }
+    }
+}
+
+function patchProps(n1: VNode, n2: VNode) {
+    const props1 = n1.props
+    const props2 = n2.props
+    const el = n2.el as HostNode
+    for (const key in props2) {
+
+        const value = props2[key]
+        const oldValue = props1[key]
+
+        switch (key) {
+            case 'style':
+                for (const k in value) {
+                    el.style[k] = value[k]
+                }
+
+                if (oldValue) {
+                    for (const k in oldValue) {
+                        if (!value.hasOwnProperty(k)) {
+                            el.style[k] = ''
+                        }
+                    }
+                }
+                
+                break
+            default:
+                if (key.startsWith('on')) {
+                    if (oldValue) {
+                        el.removeEventListener(key.slice(2), value)
+                    }
+
+                    if (value) {
+                        el.addEventListener(key.slice(2), value)
+                    }
+                } else {
+                    el.setAttribute(key, value)
+                }
+        }
+            
+    }
+}
+
+function patchText(n1: VNode, n2: VNode, container: HostNode) {
+    const el = n2.el = n1.el
+    if (n2.children !== n1.children) {
+        el.nodeValue = n2.children
+    }
+}
+
+function replaceVNode(n1: VNode, n2: VNode, container: HostNode) {
+    container.removeChild(n1.el)
+    mount(n2, container)
 }
 
 function insertText(text: string, container: HostNode) {
