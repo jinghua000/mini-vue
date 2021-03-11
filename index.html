@@ -12,34 +12,21 @@
 <script src="./dist/mini-vue.umd.js"></script>
 <script>
 const { h, render } = Vue
-
-let i = 0
 const app = document.getElementById('app')
 
-// const child = h('button', { 
-//     style: { 
-//         color: 'red' 
-//     },
-//     onclick () {
-//         console.log(i++)
-//     }
-// }, 'Click!')
-
-// const vnode = h('div', { id: 'foo', style: { color: 'blue' } }, [
-//     'before...', 
-//     h('br'), 
-//     child, 
-//     h('br'), 
-//     'after...',
-// ])
-
-let vnode = h('div', { style: { color: 'red' } }, ['text...'])
+let el1, el2
+let child = h('div', null, 'child')
+let vnode = h('div', { style: { color: 'red' } }, child)
 
 render(vnode, app)
+el1 = child.el
 
-vnode = h('div', { style: { color: 'blue' } })
+setTimeout(() => {
+    child = h('div', { style: { color: 'blue' } }, 'change!')
+    vnode = h('div', null, [child])
 
-render(vnode, app)
-
+    render(vnode, app)
+    el2 = child.el
+}, 2000)
 </script>
 </html>

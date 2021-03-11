@@ -1,38 +1,39 @@
 import { isArray, isObject, isString } from '../shared'
 
-export enum VNodeTypes {
+export enum ShapeFlags {
     ELEMENT = 1,
     COMPONENT = 1 << 1,
-    TEXT = 1 << 2,
-    TEXT_CHILDREN = 1 << 3,
-    ARRAY_CHILDREN = 1 << 4,
+    TEXT_CHILDREN = 1 << 2,
+    ARRAY_CHILDREN = 1 << 3,
 }
 
 export interface VNode {
     _isVNode: true,
-    tag: any,
-    type: VNodeTypes,
+    type: object | string | typeof TEXT,
+    shapeFlag: ShapeFlags,
     el: HTMLElement | Text | null
     props: object
     children: any
 }
 
-export function h(name: any, props: object = null, children: any = null): VNode {
-    const type = isString(name)
-        ? VNodeTypes.ELEMENT
-        : isObject(name)
-            ? VNodeTypes.COMPONENT
-            : null
+export const TEXT = Symbol('text')
 
-    if (type == null) {
-        throw new TypeError('wrong vnode type')
-    }
+export function h(
+    type: VNode['type'], 
+    props: VNode['props'] = null, 
+    children: VNode['children'] = null
+): VNode {
+    const shapeFlag = isString(type)
+        ? ShapeFlags.ELEMENT
+        : isObject(type)
+            ? ShapeFlags.COMPONENT
+            : 0
 
     const vnode: VNode = {
         _isVNode: true,
         el: null,
-        tag: name,
         type,
+        shapeFlag,
         props,
         children: null,
     }
@@ -51,30 +52,23 @@ export function normalizeVnode(vnode: any) {
 }
 
 function normalizeChildren(vnode: VNode, children: any) {
-    let type = 0
+    let shapeFlag = 0
     if (children == null) {
         children = null 
     } else if (isArray(children)) {
-        type = VNodeTypes.ARRAY_CHILDREN
+        shapeFlag = ShapeFlags.ARRAY_CHILDREN
     } else if (isObject(children)) {
         children = [children]
-        type = VNodeTypes.ARRAY_CHILDREN
+        shapeFlag = ShapeFlags.ARRAY_CHILDREN
     } else {
         children = String(children)
-        type = VNodeTypes.TEXT_CHILDREN
+        shapeFlag = ShapeFlags.TEXT_CHILDREN
     } 
 
     vnode.children = children
-    vnode.type |= type
+    vnode.shapeFlag |= shapeFlag
 }
 
 function createTextVNode(text: any): VNode {
-    return {
-        _isVNode: true,
-        el: null,
-        tag: null,
-        type: VNodeTypes.TEXT,
-        props: null,
-        children: String(text)
-    }
+    return h(TEXT, null, text)
 }
