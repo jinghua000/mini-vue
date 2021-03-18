@@ -14,19 +14,46 @@
 const { h, render } = Vue
 const app = document.getElementById('app')
 
-let el1, el2
-let child = h('div', null, 'child')
-let vnode = h('div', { style: { color: 'red' } }, child)
+function random(min, max) {
+    return (min + (max - min + 1) * Math.random()) | 0
+}
 
+function shuffle(arr) {
+    let length = arr.length
+    let i = 0
+
+    while (i < length) {
+        let next = random(i, length - 1)
+        ;[arr[i], arr[next]] = [arr[next], arr[i]]
+        i++
+    }
+
+    return arr
+}
+
+function genchildren(text) {
+    const children = Array(10)
+    for (let i = 0; i < children.length; i++) {
+        children[i] = h('div', { key: `child-${i}` }, `${text}-${i}`)
+    }
+
+    return children
+}
+
+
+let vnode = h('div', null, genchildren('text'))
 render(vnode, app)
-el1 = child.el
+const els = vnode.children.map(child => child.el)
+let children = []
 
 setTimeout(() => {
-    child = h('div', { style: { color: 'blue' } }, 'change!')
-    vnode = h('div', null, [child])
+    console.log('change!')
+    children = shuffle(genchildren('changed'))
+    // const ext1 = h('div', { key: 98}, `ext-98`)
+    // const ext2 = h('div', { key: 99}, `ext-99`)
 
+    vnode = h('div', null, children)
     render(vnode, app)
-    el2 = child.el
 }, 2000)
 </script>
 </html>

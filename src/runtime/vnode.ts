@@ -12,6 +12,7 @@ export interface VNode {
     type: object | string | typeof TEXT,
     shapeFlag: ShapeFlags,
     el: HTMLElement | Text | null
+    key: keyof any | null
     props: object
     children: any
 }
@@ -36,11 +37,16 @@ export function h(
         shapeFlag,
         props,
         children: null,
+        key: props && normalizeKey(props),
     }
 
     normalizeChildren(vnode, children)
 
     return vnode
+}
+
+function normalizeKey({ key }: any): VNode['key'] {
+    return key == null ? null : key 
 }
 
 export function normalizeVnode(vnode: any) {
