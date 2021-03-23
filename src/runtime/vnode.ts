@@ -7,11 +7,14 @@ export enum ShapeFlags {
     ARRAY_CHILDREN = 1 << 3,
 }
 
+interface CustomElementProps {
+    vnode?: VNode
+}
 export interface VNode {
     _isVNode: true,
     type: object | string | typeof TEXT,
     shapeFlag: ShapeFlags,
-    el: HTMLElement | Text | null
+    el: (HTMLElement | Text | null) & CustomElementProps
     key: keyof any | null
     props: object
     children: any
@@ -77,4 +80,8 @@ function normalizeChildren(vnode: VNode, children: any) {
 
 function createTextVNode(text: any): VNode {
     return h(TEXT, null, text)
+}
+
+export function isSameVNode(n1: VNode, n2: VNode) {
+    return n1.type === n2.type && n1.key === n2.key
 }

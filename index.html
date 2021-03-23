@@ -5,6 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        .foo {
+            color: aqua;
+        }        
+    </style>
 </head>
 <body>
     <div id="app"></div>
@@ -37,11 +42,15 @@ function genchildren(text) {
         children[i] = h('div', { key: `child-${i}` }, `${text}-${i}`)
     }
 
+    children.push(h('div', null, 'unkeyed1'))
+    children.push(h('div', null, 'unkeyed2'))
+    children.push(h('div', null, 'unkeyed3'))
+
     return children
 }
 
 
-let vnode = h('div', null, genchildren('text'))
+let vnode = h('div', { class: 'foo', style: { color: 'red' } }, genchildren('text'))
 render(vnode, app)
 const els = vnode.children.map(child => child.el)
 let children = []
@@ -49,11 +58,9 @@ let children = []
 setTimeout(() => {
     console.log('change!')
     children = shuffle(genchildren('changed'))
-    // const ext1 = h('div', { key: 98}, `ext-98`)
-    // const ext2 = h('div', { key: 99}, `ext-99`)
 
     vnode = h('div', null, children)
     render(vnode, app)
-}, 2000)
+}, 1000)
 </script>
 </html>

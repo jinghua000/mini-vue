@@ -1,10 +1,5 @@
-import { VNode, ShapeFlags, normalizeVnode, TEXT } from './vnode'
-
-interface CustomElementProps {
-    vnode?: VNode
-}
-
-type HostNode = VNode['el'] & CustomElementProps
+import { VNode, ShapeFlags, normalizeVnode, TEXT, isSameVNode } from './vnode'
+type HostNode = VNode['el']
 
 export function render(vnode: VNode | null, container: HostNode) {
     const oldVNode = container.vnode
@@ -113,10 +108,6 @@ function patch(n1: VNode, n2: VNode, container: HostNode) {
                 patchElement(n1, n2)
             }
     }
-}
-
-function isSameVNode(n1: VNode, n2: VNode) {
-    return n1.type === n2.type && n1.key === n2.key
 }
 
 function patchElement(n1: VNode, n2: VNode) {
@@ -339,46 +330,62 @@ function patchKeyedChildren(c1: any, c2: any, el: HostNode) {
 }
 
 function patchProps(props1: object, props2: object, el: HTMLElement) {
-    props1 ||= {}
-    props2 ||= {}
+    props1 = props1 || {}
+    props2 = props2 || {}
 
     for (const key in props2) {
+        hostPatchProps(el, key, props1, props2)
+    }
 
-        const value = props2[key]
-        const oldValue = props1[key]
+    for (const key in props1) {
+        if (!(key in props2)) {
+            hostPatchProps(el, key, props1, props2)
+        }
+    }
+}
 
-        switch (key) {
-            case 'style':
+function hostPatchProps(el: HTMLElement, key: string, props1: object, props2: object) {
+    const value = props2[key]
+    const oldValue = props1[key]
+    
+    switch (key) {
+        case 'style':
+            if (value) {
                 for (const k in value) {
                     el.style[k] = value[k]
                 }
+            }
 
-                if (oldValue) {
+            if (oldValue) {
+                if (value) {
                     for (const k in oldValue) {
                         if (!value.hasOwnProperty(k)) {
                             el.style[k] = ''
                         }
                     }
-                }
-                
-                break
-            default:
-                if (key.startsWith('on')) {
-                    if (oldValue) {
-                        el.removeEventListener(key.slice(2), value)
-                    }
-
-                    if (value) {
-                        el.addEventListener(key.slice(2), value)
-                    }
                 } else {
-                    el.setAttribute(key, value)
+                    el.removeAttribute(key)
                 }
-        }
+            }
             
-    }
+            break
+        default:
+            if (key.startsWith('on')) {
+                if (oldValue) {
+                    el.removeEventListener(key.slice(2), oldValue)
+                }
 
-    // TODO delete props
+                if (value) {
+                    el.addEventListener(key.slice(2), value)
+                }
+            } else {
+                if (value) {
+                    el.setAttribute(key, value)
+                } else {
+                    el.removeAttribute(key)
+                }
+            }
+    }
 }
 
 function patchText(n1: VNode, n2: VNode) {
