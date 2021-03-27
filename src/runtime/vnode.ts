@@ -38,7 +38,7 @@ export function h(
         el: null,
         type,
         shapeFlag,
-        props,
+        props: props || {},
         children: null,
         key: props && normalizeKey(props),
     }

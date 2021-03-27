@@ -1,4 +1,5 @@
 import { VNode, ShapeFlags, normalizeVnode, TEXT, isSameVNode } from './vnode'
+import { createComponent, renderComponentRoot } from './component'
 type HostNode = VNode['el']
 
 export function render(vnode: VNode | null, container: HostNode) {
@@ -28,6 +29,8 @@ function mount(vnode: VNode, container: HostNode, ref: HostNode) {
         default:
             if (shapeFlag & ShapeFlags.ELEMENT) {
                 mountElement(vnode, container, ref)
+            } else if (shapeFlag & ShapeFlags.COMPONENT) {
+                mountComponent(vnode, container, ref)
             }
     }
 }
@@ -81,6 +84,13 @@ function mountElement(vnode: VNode, container: HostNode, ref: HostNode) {
     }
     
     container.insertBefore(el, ref)
+}
+
+function mountComponent(vnode: VNode, container: HostNode, ref: HostNode) {
+    const instance = createComponent(vnode)
+    instance.subTree = renderComponentRoot(instance)
+    mount(instance.subTree, container, ref)
+    vnode.el = instance.subTree.el
 }
 
 function mountText(vnode: VNode, container: HostNode, ref: HostNode) {

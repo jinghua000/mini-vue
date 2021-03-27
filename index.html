@@ -7,7 +7,7 @@
     <title>Document</title>
     <style>
         .foo {
-            color: aqua;
+            color: blueviolet;
         }        
     </style>
 </head>
@@ -49,18 +49,41 @@ function genchildren(text) {
     return children
 }
 
+const component = {
+    render() {
+        return h(child)
+        // return h(
+        //     'div', 
+        //     {}, 
+        //     [
+        //         'parent', 
+        //         h('br'),
+        //         h(child),
+        //     ]
+        // )
+    }
+}
 
-let vnode = h('div', { class: 'foo', style: { color: 'red' } }, genchildren('text'))
-render(vnode, app)
-const els = vnode.children.map(child => child.el)
-let children = []
+const child = {
+    render() {
+        return h('div', {}, 'this is child')
+    }
+}
 
-setTimeout(() => {
-    console.log('change!')
-    children = shuffle(genchildren('changed'))
+// let vnode = h('div', { class: 'foo', style: { color: 'red' } }, genchildren('text'))
 
-    vnode = h('div', null, children)
-    render(vnode, app)
-}, 1000)
+render(h(component, { class: 'foo' }), app)
+
+// const els = vnode.children.map(child => child.el)
+// console.log(els)
+// let children = []
+
+// setTimeout(() => {
+//     console.log('change!')
+//     children = shuffle(genchildren('changed'))
+
+//     vnode = h('div', null, children)
+//     render(vnode, app)
+// }, 1000)
 </script>
 </html>
