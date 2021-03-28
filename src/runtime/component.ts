@@ -6,7 +6,10 @@ export interface ComponentInstance {
     vnode: VNode,
     type: object,
     render: Function,
-    subTree?: VNode,
+    subTree: VNode | null,
+    update: Function | null,
+    mounted: Function | null,
+    isMounted: boolean,
 }
 
 let uid = 0
@@ -18,6 +21,10 @@ export function createComponent(vnode: VNode): ComponentInstance {
         vnode,
         type: component,
         render: component.render ? component.render : NOOP,
+        subTree: null,
+        update: null,
+        mounted: component.mounted || null,
+        isMounted: false,
     }
 
     return instance

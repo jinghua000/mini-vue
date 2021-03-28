@@ -9,6 +9,9 @@
         .foo {
             color: blueviolet;
         }        
+        .bar {
+            color: cadetblue;
+        }
     </style>
 </head>
 <body>
@@ -49,41 +52,22 @@ function genchildren(text) {
     return children
 }
 
+const state = {
+    text: 'div1'
+}
+
 const component = {
     render() {
-        return h(child)
-        // return h(
-        //     'div', 
-        //     {}, 
-        //     [
-        //         'parent', 
-        //         h('br'),
-        //         h(child),
-        //     ]
-        // )
-    }
+        return h('div', {}, state.text)
+    },
 }
-
-const child = {
-    render() {
-        return h('div', {}, 'this is child')
-    }
-}
-
-// let vnode = h('div', { class: 'foo', style: { color: 'red' } }, genchildren('text'))
 
 render(h(component, { class: 'foo' }), app)
 
-// const els = vnode.children.map(child => child.el)
-// console.log(els)
-// let children = []
-
-// setTimeout(() => {
-//     console.log('change!')
-//     children = shuffle(genchildren('changed'))
-
-//     vnode = h('div', null, children)
-//     render(vnode, app)
-// }, 1000)
+setTimeout(() => {
+    console.log('change!')
+    state.text = 'div2'
+    render(h(component, { class: 'bar' }), app)
+}, 2000)
 </script>
 </html>

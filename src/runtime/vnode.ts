@@ -1,4 +1,5 @@
 import { isArray, isObject, isString } from '../shared'
+import { ComponentInstance } from './component'
 
 export enum ShapeFlags {
     ELEMENT = 1,
@@ -8,16 +9,17 @@ export enum ShapeFlags {
 }
 
 interface CustomElementProps {
-    vnode?: VNode
+    vnode?: VNode,
 }
 export interface VNode {
     _isVNode: true,
     type: object | string | typeof TEXT,
     shapeFlag: ShapeFlags,
-    el: (HTMLElement | Text | null) & CustomElementProps
-    key: keyof any | null
-    props: object
-    children: any
+    el: (HTMLElement | Text | null) & CustomElementProps,
+    key: keyof any | null,
+    props: object,
+    children: any,
+    component?: ComponentInstance,
 }
 
 export const TEXT = Symbol('text')

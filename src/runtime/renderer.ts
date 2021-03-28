@@ -87,10 +87,25 @@ function mountElement(vnode: VNode, container: HostNode, ref: HostNode) {
 }
 
 function mountComponent(vnode: VNode, container: HostNode, ref: HostNode) {
-    const instance = createComponent(vnode)
-    instance.subTree = renderComponentRoot(instance)
-    mount(instance.subTree, container, ref)
-    vnode.el = instance.subTree.el
+    const instance = vnode.component = createComponent(vnode)
+
+    instance.update = () => {
+        if (instance.isMounted) {
+            const nextTree = renderComponentRoot(instance)
+            const prevTree = instance.subTree
+            instance.subTree = nextTree
+            patch(prevTree, nextTree, vnode.el.parentNode as HTMLElement)
+            vnode.el = instance.subTree.el
+        } else {
+            instance.subTree = renderComponentRoot(instance)
+            mount(instance.subTree, container, ref)
+            instance.isMounted = true
+            vnode.el = instance.subTree.el
+            instance.mounted && instance.mounted()
+        }
+    }
+
+    instance.update()
 }
 
 function mountText(vnode: VNode, container: HostNode, ref: HostNode) {
@@ -116,6 +131,8 @@ function patch(n1: VNode, n2: VNode, container: HostNode) {
         default:
             if (shapeFlag & ShapeFlags.ELEMENT) {
                 patchElement(n1, n2)
+            } else if (shapeFlag & ShapeFlags.COMPONENT) {
+                patchComponent(n1, n2)
             }
     }
 }
@@ -125,6 +142,13 @@ function patchElement(n1: VNode, n2: VNode) {
 
     patchProps(n1.props, n2.props, el)
     patchChildren(n1, n2, el)
+}
+
+function patchComponent(n1: VNode, n2: VNode) {
+    n2.el = n1.el
+    const instance = n2.component = n1.component
+    instance.vnode = n2
+    instance.update()
 }
 
 function patchChildren(
