@@ -1,13 +1,27 @@
-type PropsSet = Set<Function>
+type PropsSet = Set<EffectFunction>
 type ObjectMap = Map<PropertyKey, PropsSet>
 
-const targetMap: WeakMap<object, ObjectMap> = new WeakMap()
-const effectStack: Function[] = []
+interface EffectOptions {
+    schedule?: Function
+}
+interface EffectFunction {
+    (): any
+    id: number
+    raw: Function
+    options: EffectOptions
+}
 
-export function effect(fn: Function) {
-    effectStack.push(fn)
-    fn()
+const targetMap: WeakMap<object, ObjectMap> = new WeakMap()
+const effectStack: EffectFunction[] = []
+
+export function effect(fn: Function, options: EffectOptions = {}) {
+    const effected = createEffect(fn, options)
+
+    effectStack.push(effected)
+    effected()
     effectStack.pop()
+
+    return effected
 }
 
 export function trigger(target: object, prop: PropertyKey) {
@@ -18,7 +32,13 @@ export function trigger(target: object, prop: PropertyKey) {
     const depsMap = targetMap.get(target)
     const deps = depsMap.get(prop)
     
-    deps && deps.forEach(fn => fn())
+    deps && deps.forEach(fn => {
+        if (fn.options && fn.options.schedule) {
+            fn.options.schedule(fn)
+        } else {
+            fn()
+        }
+    })
 }
 
 export function track(target: object, prop: PropertyKey) {
@@ -41,4 +61,17 @@ export function track(target: object, prop: PropertyKey) {
     }
 
     deps.add(effectStack[effectStack.length - 1])
+}
+
+let uid = 0
+function createEffect(fn, options): EffectFunction {
+    const effect = function () {
+        return fn()    
+    }
+
+    effect.id = uid++
+    effect.options = options
+    effect.raw = fn
+
+    return effect
 }

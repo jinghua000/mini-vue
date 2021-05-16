@@ -5,7 +5,7 @@ it('string should considered as element', () => {
     expect(vnode.shapeFlag).toBe(ShapeFlags.ELEMENT)
     expect(vnode.type).toBe('div')
     expect(vnode._isVNode).toBe(true)
-    expect(vnode.props).toBe(null)
+    expect(vnode.props).toStrictEqual({})
 })
 
 it('object should considered as component', () => {

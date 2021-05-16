@@ -64,3 +64,22 @@ it('array methods can be tracked', () => {
 
     expect(dummy).toBe(123)
 })
+
+it('schedule', () => {
+    let dummy 
+    let update
+
+    let state: any = reactive({})
+    let schedule = fn => update = fn
+
+    effect(() => {
+        dummy = state.foo
+    }, {
+        schedule
+    })
+
+    state.foo = 123
+    expect(dummy).toBe(void 0)
+    update()
+    expect(dummy).toBe(123)
+})

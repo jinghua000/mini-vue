@@ -1,5 +1,7 @@
 import { VNode, ShapeFlags, normalizeVnode, TEXT, isSameVNode } from './vnode'
-import { createComponent, renderComponentRoot } from './component'
+import { setupComponent, createComponent, renderComponentRoot } from './component'
+import { queueJob } from './schedule'
+import { effect } from '../reactive/effect'
 type HostNode = VNode['el']
 
 export function render(vnode: VNode | null, container: HostNode) {
@@ -88,24 +90,24 @@ function mountElement(vnode: VNode, container: HostNode, ref: HostNode) {
 
 function mountComponent(vnode: VNode, container: HostNode, ref: HostNode) {
     const instance = vnode.component = createComponent(vnode)
+    setupComponent(instance)
 
-    instance.update = () => {
-        if (instance.isMounted) {
-            const nextTree = renderComponentRoot(instance)
-            const prevTree = instance.subTree
-            instance.subTree = nextTree
-            patch(prevTree, nextTree, vnode.el.parentNode as HTMLElement)
-            vnode.el = instance.subTree.el
-        } else {
+    instance.update = effect(() => {
+        if (!instance.isMounted) {
             instance.subTree = renderComponentRoot(instance)
             mount(instance.subTree, container, ref)
             instance.isMounted = true
             vnode.el = instance.subTree.el
             instance.mounted && instance.mounted()
+        } else {
+            const nextTree = renderComponentRoot(instance)
+            const prevTree = instance.subTree
+            instance.subTree = nextTree
+            patch(prevTree, nextTree, vnode.el.parentNode as HTMLElement)
+            vnode.el = instance.subTree.el
         }
-    }
+    }, { schedule: queueJob })
 
-    instance.update()
 }
 
 function mountText(vnode: VNode, container: HostNode, ref: HostNode) {
@@ -147,7 +149,7 @@ function patchElement(n1: VNode, n2: VNode) {
 function patchComponent(n1: VNode, n2: VNode) {
     n2.el = n1.el
     const instance = n2.component = n1.component
-    instance.vnode = n2
+    instance.$props = n2.props
     instance.update()
 }
 
@@ -378,6 +380,10 @@ function patchProps(props1: object, props2: object, el: HTMLElement) {
     }
 }
 
+const NATIVE_ELEMENT_PROPS = new Set([
+    'id', 'class'
+])
+
 function hostPatchProps(el: HTMLElement, key: string, props1: object, props2: object) {
     const value = props2[key]
     const oldValue = props1[key]
@@ -406,17 +412,19 @@ function hostPatchProps(el: HTMLElement, key: string, props1: object, props2: ob
         default:
             if (key.startsWith('on')) {
                 if (oldValue) {
-                    el.removeEventListener(key.slice(2), oldValue)
+                    el.removeEventListener(key.slice(2).toLocaleLowerCase(), oldValue)
                 }
 
                 if (value) {
-                    el.addEventListener(key.slice(2), value)
+                    el.addEventListener(key.slice(2).toLocaleLowerCase(), value)
                 }
             } else {
-                if (value) {
-                    el.setAttribute(key, value)
-                } else {
-                    el.removeAttribute(key)
+                if (NATIVE_ELEMENT_PROPS.has(key)) {
+                    if (value) {
+                        el.setAttribute(key, value)
+                    } else {
+                        el.removeAttribute(key)
+                    }
                 }
             }
     }

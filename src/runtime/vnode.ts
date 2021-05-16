@@ -80,7 +80,7 @@ function normalizeChildren(vnode: VNode, children: any) {
     vnode.shapeFlag |= shapeFlag
 }
 
-function createTextVNode(text: any): VNode {
+export function createTextVNode(text: any): VNode {
     return h(TEXT, null, text)
 }
 

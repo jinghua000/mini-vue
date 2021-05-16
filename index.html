@@ -19,7 +19,7 @@
 </body>
 <script src="./dist/mini-vue.umd.js"></script>
 <script>
-const { h, render } = Vue
+const { h, render, nextTick } = Vue
 const app = document.getElementById('app')
 
 function random(min, max) {
@@ -52,22 +52,63 @@ function genchildren(text) {
     return children
 }
 
-const state = {
-    text: 'div1'
+const Component = {
+    render() {
+        return h(
+            'div', 
+            {
+                style: {
+                    textAlign: 'center',
+                },
+            },
+            [
+                h(Child, { count: this.$data.count }),
+                h('br'),
+                h('button', {
+                    onClick: this.add
+                }, 'Click!')
+            ]
+        )
+    },
+    data() {
+        return {
+            count: 0,
+        }
+    },
+    methods: {
+        async add() {
+            this.$data.count++
+            this.$data.count++
+            this.$data.count++
+
+            console.log(document.getElementById('count').textContent)
+            await nextTick()
+            console.log('after nexttick')
+            console.log(document.getElementById('count').textContent)
+        }
+    }
 }
 
-const component = {
+const Child = {
     render() {
-        return h('div', {}, state.text)
+        return h('span', { id: 'count' }, `current count is ${this.$props.count}`)
     },
 }
 
-render(h(component, { class: 'foo' }), app)
+const MyDiv = {
+    template: `
+<div class="foo">
+    {{ $data.foo }}
+    <span>world</span>
+</div>
+    `,
+    data() {
+        return {
+            foo: 'hello'
+        }
+    },
+}
 
-setTimeout(() => {
-    console.log('change!')
-    state.text = 'div2'
-    render(h(component, { class: 'bar' }), app)
-}, 2000)
+render(h(MyDiv), app)
 </script>
 </html>
