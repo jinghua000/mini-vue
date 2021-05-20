@@ -9,6 +9,7 @@ Try to impelement a mini-vue.
 - reactive
 - nextTick
 - h - createVNode
+- renderer
 - component update
 - simple compiler
 - interpolation
