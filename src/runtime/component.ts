@@ -38,10 +38,6 @@ export function createComponent(vnode: VNode): ComponentInstance {
 
 export function renderComponentRoot(instance: ComponentInstance): VNode {
     const root = instance.render(instance)
-
-    console.log('render root')
-    console.log(root)
-
     if (!root) {
         throw new Error(`Component's render function has not return anything!`)
     }
