@@ -13,3 +13,5 @@ Try to impelement a mini-vue.
 - component update
 - simple compiler
 - interpolation
+
+Features above are in ./src
